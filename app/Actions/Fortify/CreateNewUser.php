@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Actions\Fortify;
+
+use App\Http\Requests\RegisterRequest;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\CreatesNewUsers;
+
+class CreateNewUser implements CreatesNewUsers
+{
+    use PasswordValidationRules;
+
+    /**
+     * Validate and create a newly registered user.
+     *
+     * @param  array<string, string>  $input
+     *
+     * @throws ValidationException
+     */
+    public function create(array $input): User
+    {
+        if (isset($input['email']) && is_string($input['email'])) {
+            $input['email'] = strtolower(trim($input['email']));
+        }
+        Validator::make($input, (new RegisterRequest)->rules())->validate();
+
+        return User::create([
+            'name' => $input['name'],
+            'email' => $input['email'],
+            'password' => Hash::make($input['password']),
+        ]);
+    }
+}

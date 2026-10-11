@@ -1,0 +1,1 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Incubadora FIC</title><h1>Hola, {{ auth()->user()->name }}</h1><p>Tu cuenta está verificada. La base del proyecto y la API están listas para integrar los clientes.</p><form method="POST" action="/logout">@csrf<button>Cerrar sesión</button></form></html>
