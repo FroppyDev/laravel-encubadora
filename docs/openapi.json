@@ -89,6 +89,11 @@
           "description": {
             "type": "string",
             "nullable": true
+          },
+          "is_active": {
+            "default": true,
+            "type": "boolean",
+            "description": "Indica si acepta nuevas asignaciones. Los proyectos existentes conservan su categoría."
           }
         }
       },
@@ -1235,8 +1240,8 @@
     },
     "/categories": {
       "get": {
-        "summary": "Catálogo de categories",
-        "description": "100 registros por página.",
+        "summary": "Catálogo de categorías activas para nuevas selecciones",
+        "description": "Excluye categorías inactivas. Los proyectos existentes conservan su categoría y siguen siendo consultables.",
         "security": [],
         "parameters": [
           {

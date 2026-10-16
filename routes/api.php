@@ -26,7 +26,7 @@ Route::prefix('v1')->middleware(['api.identity', 'throttle:api'])->group(functio
         return response()->json(['message' => 'Correo verificado. Ya puedes volver a la aplicación.']);
     })->middleware(['signed', 'throttle:6,1'])->name('api.verification.verify');
 
-    Route::get('categories', fn () => Category::orderBy('name')->paginate(100));
+    Route::get('categories', fn () => Category::where('is_active', true)->orderBy('name')->paginate(100));
     Route::get('technologies', fn () => Technology::orderBy('name')->paginate(100));
     Route::get('projects', [ProjectController::class, 'index']);
     Route::get('projects/{project}', [ProjectController::class, 'show']);

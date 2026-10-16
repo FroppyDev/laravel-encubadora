@@ -98,14 +98,17 @@
             <p class="menu-title">Categorías</p>
             <ul class="menu-list">
                 <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Todos los proyectos</a></li>
-                <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Arte</a></li>
-                <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Multimedia</a></li>
-                <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Educación</a></li>
-                <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Entretenimiento</a></li>
-                <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Videojuegos</a></li>
+                @forelse($categories as $category)
+                <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>{{ $category->name }}</a></li>
+                @empty
+                <li class="menu-bio">No hay categorías activas.</li>
+                @endforelse
             </ul>
         </div>
 
+        @if(auth()->user()->role === 'admin')
+        <div class="menu-section"><a class="menu-link" href="{{ route('admin.dashboard') }}">Panel de administración</a></div>
+        @endif
         <div class="menu-footer">
             <form method="POST" action="/logout">@csrf<button type="submit">Cerrar sesión</button></form>
         </div>

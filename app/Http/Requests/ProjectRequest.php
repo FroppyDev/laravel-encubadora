@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +21,14 @@ class ProjectRequest extends FormRequest
             'title' => [$required, 'string', 'max:180'],
             'summary' => [$required, 'string', 'max:500'],
             'description' => [$required, 'string', 'max:20000'],
-            'category_id' => [$required, 'integer', 'exists:categories,id'],
+            'category_id' => [$required, 'integer', Rule::exists('categories', 'id')->where(function ($query) {
+                // Existing projects may keep their category after it is deactivated.
+                $project = $this->route('project');
+                if (! $this->isMethod('POST') && $project instanceof Project && (string) $project->category_id === (string) $this->input('category_id')) {
+                    return;
+                }
+                $query->where('is_active', true);
+            })],
             'problem_statement' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'proposed_solution' => ['sometimes', 'nullable', 'string', 'max:10000'],
             'repository_url' => ['sometimes', 'nullable', 'url:http,https', 'max:2048'],

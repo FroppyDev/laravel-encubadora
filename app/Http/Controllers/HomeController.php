@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Project;
 use App\Services\PlaceholderProjects;
 use Illuminate\Http\Request;
@@ -34,7 +35,9 @@ class HomeController extends Controller
             ? app(PlaceholderProjects::class)->paginate($search, $tab)
             : $query->orderByDesc('id')->paginate(12)->withQueryString();
 
-        return view('home', compact('projects', 'search', 'tab', 'showPlaceholders'));
+        $categories = Category::where('is_active', true)->orderBy('name')->get(['id', 'name']);
+
+        return view('home', compact('projects', 'search', 'tab', 'showPlaceholders', 'categories'));
     }
 
     public function updateProfile(Request $request)
