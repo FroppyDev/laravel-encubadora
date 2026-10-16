@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
+use App\Rules\InstitutionalEmail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -25,7 +26,7 @@ class AuthController extends Controller
         if (is_string($request->email)) {
             $request->merge(['email' => strtolower(trim($request->email))]);
         }
-        $data = $request->validate(['email' => 'required|email', 'password' => 'required|string', 'device_name' => 'required|string|max:100']);
+        $data = $request->validate(['email' => ['required', 'email', new InstitutionalEmail], 'password' => 'required|string', 'device_name' => 'required|string|max:100']);
         $user = User::where('email', $data['email'])->first();
         if (! $user || ! Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages(['email' => ['Las credenciales no son correctas.']]);

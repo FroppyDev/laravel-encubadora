@@ -15,8 +15,8 @@ services:
       DB_USERNAME: ${DB_USERNAME:-incubadora}
       DB_PASSWORD: ${DB_PASSWORD:-local-only-password}
       MAIL_MAILER: smtp
-      MAIL_HOST: mailpit
-      MAIL_PORT: 1025
+      MAIL_HOST: ${DOCKER_MAIL_HOST:-mailpit}
+      MAIL_PORT: ${DOCKER_MAIL_PORT:-1025}
     depends_on:
       db:
         condition: service_healthy

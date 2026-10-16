@@ -6,10 +6,13 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Models\User;
+use App\Rules\InstitutionalEmail;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -31,11 +34,24 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Fortify::authenticateUsing(function (Request $request) {
+            if (is_string($request->input('email'))) {
+                $request->merge(['email' => Str::lower(trim($request->input('email')))]);
+            }
+            $data = $request->validate([
+                'email' => ['required', 'email', new InstitutionalEmail],
+                'password' => ['required', 'string'],
+            ]);
+            $user = User::where('email', $data['email'])->first();
+
+            return $user && Hash::check($data['password'], $user->password) ? $user : null;
+        });
+
         Fortify::loginView(fn () => view('auth.form', ['mode' => 'login']));
         Fortify::registerView(fn () => view('auth.form', ['mode' => 'register']));
         Fortify::requestPasswordResetLinkView(fn () => view('auth.form', ['mode' => 'forgot-password']));
         Fortify::resetPasswordView(fn (Request $request) => view('auth.form', ['mode' => 'reset-password', 'request' => $request]));
-        Fortify::verifyEmailView(fn () => view('auth.verify'));
+        Fortify::verifyEmailView(fn (Request $request) => app(\App\Http\Controllers\EmailVerificationCodeController::class)->notice($request, app(\App\Services\EmailVerificationCodeService::class)));
         Fortify::confirmPasswordView(fn () => view('auth.form', ['mode' => 'confirm-password']));
         RateLimiter::for('registration', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
