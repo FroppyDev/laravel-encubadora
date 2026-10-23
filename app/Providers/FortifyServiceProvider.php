@@ -55,7 +55,15 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::confirmPasswordView(fn () => view('auth.form', ['mode' => 'confirm-password']));
         RateLimiter::for('registration', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
-        VerifyEmail::createUrlUsing(fn ($user) => URL::temporarySignedRoute('api.verification.verify', now()->addMinutes(60), ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]));
+        VerifyEmail::createUrlUsing(function ($user) {
+            // Mobile clients can reach the same API through emulator/USB aliases.
+            // Email links must use the configured browser-accessible origin.
+            $urls = clone URL::getFacadeRoot();
+            $urls->useOrigin(config('app.url'));
+            $urls->forceScheme(parse_url(config('app.url'), PHP_URL_SCHEME));
+
+            return $urls->temporarySignedRoute('api.verification.verify', now()->addMinutes(60), ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]);
+        });
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);

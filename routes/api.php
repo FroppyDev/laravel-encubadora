@@ -39,6 +39,7 @@ Route::prefix('v1')->middleware(['api.identity', 'throttle:api'])->group(functio
         Route::post('email/verification-notification', [AuthController::class, 'resend'])->middleware('throttle:6,1');
         Route::get('me/projects', [ProjectController::class, 'mine']);
         Route::middleware('verified')->group(function () {
+            Route::post('user/images', [AuthController::class, 'images']);
             Route::patch('user', [AuthController::class, 'profile']);
             Route::post('projects', [ProjectController::class, 'store']);
             Route::match(['put', 'patch'], 'projects/{project}', [ProjectController::class, 'update']);

@@ -171,7 +171,7 @@ Alta: núcleo funcional, acceso o control de la comunidad. Media: soporte releva
 **Fechas:** 5–18 de octubre de 2026.
 
 **Trabajo técnico transversal:** Agregar almacenamiento de imágenes y respaldo; trabajar mediante migraciones nuevas.
-
+S
 ### HU07 · Creación y publicación de proyectos
 
 **Historia:** Como estudiante verificado, quiero registrar y publicar un proyecto para dar a conocer mi propuesta.
