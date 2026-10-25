@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
@@ -18,6 +20,29 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $appends = [
+        'avatar_url',
+        'cover_image_url',
+    ];
+
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->avatar_path
+                ? Storage::disk('public')->url($this->avatar_path)
+                : asset('images/avatar.png')
+        );
+    }
+
+    protected function coverImageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->cover_image_path
+                ? Storage::disk('public')->url($this->cover_image_path)
+                : asset('images/cover.jpe')
+        );
+    }
+    
     public function projects()
     {
         return $this->hasMany(Project::class);

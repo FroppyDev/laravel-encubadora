@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -12,6 +13,25 @@ use Tests\TestCase;
 class AuthSecurityTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_mobile_registration_uses_canonical_origin_for_verification_link(): void
+    {
+        config(['app.url' => 'http://localhost:8000']);
+        Notification::fake();
+        $this->postJson('http://10.0.2.2:8000/api/v1/register', [
+            'name' => 'Android', 'email' => 'android@info.uas.edu.mx',
+            'password' => 'Password123!', 'password_confirmation' => 'Password123!',
+        ])->assertCreated();
+        $user = User::where('email', 'android@info.uas.edu.mx')->firstOrFail();
+        Notification::assertSentTo($user, VerifyEmail::class, function ($notification) use ($user) {
+            $url = $notification->toMail($user)->actionUrl;
+            $this->assertStringStartsWith('http://localhost:8000/api/v1/email/verify/', $url);
+            $this->getJson($url)->assertOk();
+
+            return true;
+        });
+        $this->assertNotNull($user->fresh()->email_verified_at);
+    }
 
     public function test_password_reset_revokes_existing_mobile_tokens(): void
     {
