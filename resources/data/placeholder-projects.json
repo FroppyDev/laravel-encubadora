@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1, "user_id": 1, "category_id": 1,
+    "title": "FIC Conecta", "slug": "fic-conecta",
+    "summary": "Plataforma para conectar estudiantes que buscan colaboradores para sus proyectos.",
+    "description": "Permite publicar ideas, indicar las habilidades requeridas y recibir solicitudes de estudiantes interesados. Busca formar equipos multidisciplinarios dentro de la facultad.",
+    "cover_image": "projects/fic-conecta.jpg", "status": "published", "visibility": "public",
+    "created_at": "2026-09-21T10:00:00Z", "updated_at": "2026-10-01T14:30:00Z", "deleted_at": null
+  },
+  {
+    "id": 2, "user_id": 2, "category_id": 2,
+    "title": "EcoCampus", "slug": "ecocampus",
+    "summary": "Aplicación para fomentar el reciclaje y localizar puntos de recolección en el campus.",
+    "description": "Los estudiantes pueden consultar puntos de reciclaje, aprender a separar residuos e inscribirse en jornadas de limpieza. El proyecto incluye un registro de materiales recolectados para medir los resultados de cada campaña.",
+    "cover_image": "projects/ecocampus.jpg", "status": "published", "visibility": "public",
+    "created_at": "2026-09-23T16:00:00Z", "updated_at": "2026-10-04T11:15:00Z", "deleted_at": null
+  },
+  {
+    "id": 3, "user_id": 3, "category_id": 3,
+    "title": "Tutorías entre Compañeros", "slug": "tutorias-entre-companeros",
+    "summary": "Sistema para encontrar asesorías académicas impartidas por otros estudiantes.",
+    "description": "Conecta a estudiantes que necesitan apoyo en programación, matemáticas y bases de datos con compañeros que dominan esas materias. Ofrece búsqueda por asignatura, disponibilidad de horarios y solicitudes de asesoría.",
+    "cover_image": "projects/tutorias-entre-companeros.jpg", "status": "published", "visibility": "public",
+    "created_at": "2026-09-28T09:00:00Z", "updated_at": "2026-10-06T17:45:00Z", "deleted_at": null
+  },
+  {
+    "id": 4, "user_id": 1, "category_id": 4,
+    "title": "Aula Inteligente", "slug": "aula-inteligente",
+    "summary": "Prototipo de sensores para monitorear las condiciones ambientales de los salones.",
+    "description": "Utiliza dispositivos IoT para medir temperatura, humedad e iluminación. Los datos se muestran en un panel que permite identificar condiciones que afectan la comodidad y proponer mejoras en el consumo energético.",
+    "cover_image": "projects/aula-inteligente.jpg", "status": "draft", "visibility": "private",
+    "created_at": "2026-10-05T12:00:00Z", "updated_at": "2026-10-10T10:20:00Z", "deleted_at": null
+  },
+  {
+    "id": 5, "user_id": 4, "category_id": 1,
+    "title": "Turno Fácil", "slug": "turno-facil",
+    "summary": "Sistema de turnos digitales para reducir las filas en servicios escolares.",
+    "description": "Permite solicitar un turno desde el teléfono y consultar el avance de la fila. El personal administrativo puede llamar al siguiente estudiante, organizar la atención por trámite y consultar estadísticas de tiempos de espera.",
+    "cover_image": "projects/turno-facil.jpg", "status": "published", "visibility": "public",
+    "created_at": "2026-10-07T08:30:00Z", "updated_at": "2026-10-12T15:00:00Z", "deleted_at": null
+  }
+]
