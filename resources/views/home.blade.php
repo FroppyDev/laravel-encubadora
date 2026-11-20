@@ -48,6 +48,22 @@
         .profile-dialog h2{margin:0;font-size:24px}.profile-dialog p{margin:8px 0 20px;font-size:14px}
         .profile-dialog .profile-form{padding:0}.profile-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;flex-wrap:wrap}
         .edit-profile{width:100%;text-align:left;border:0;color:#1769d2;font-weight:700}
+        .project-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+        .edit-profile {
+            display: block;
+            width: 100%;
+            padding: 12px 8px;
+            text-decoration: none;
+            text-align: left;
+            border: 0;
+            color: #1769d2;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -83,9 +99,9 @@
             </div>
         </div>
 
-        <div class="menu-section">
-            <button class="edit-profile" id="editProfile" type="button" aria-haspopup="dialog" aria-controls="profileDialog">Editar perfil</button>
-        </div>
+        <a href="{{ route('profile.profile') }}" class="edit-profile">
+            Editar perfil
+        </a>
         <div class="menu-section">
             <p class="menu-title">Colecciones</p>
             <ul class="menu-list">
@@ -146,14 +162,13 @@
             @if($showPlaceholders)<p role="status">Proyectos de ejemplo para explorar la plataforma. Se mostrarán proyectos reales cuando la comunidad publique los suyos.</p>@endif
             <div class="project-grid">
                 @forelse($projects as $project)
-                    <article class="project-card">
+                    <a href="{{ route('projects.show', $project->slug) }}" class="project-card">
                         @if($project->is_placeholder)<span class="verified">Proyecto de ejemplo</span><br>@endif
                         <span class="eyebrow">{{ $project->category?->name }}</span>
                         <h3>{{ $project->title }}</h3>
                         <p>{{ $project->summary }}</p>
                         <p class="project-meta">{{ $project->user?->name }} · {{ $project->created_at->format('d/m/Y') }} · {{ $project->reactions_count }} reacciones</p>
-                        <details><summary>Ver descripción</summary><p class="bio">{{ $project->description }}</p></details>
-                    </article>
+                    </a>
                 @empty
                     <p class="empty-state">{{ $search !== '' ? 'No encontramos proyectos con esa búsqueda. Prueba con otras palabras.' : 'Todavía no hay proyectos publicados.' }}</p>
                 @endforelse
@@ -195,24 +210,6 @@
                 else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
             }
         });
-        const profileDialog = document.getElementById('profileDialog');
-        function openProfile() {
-            setMenu(false);
-            profileDialog.showModal();
-            document.body.style.overflow = 'hidden';
-        }
-        document.getElementById('editProfile').addEventListener('click', openProfile);
-        document.getElementById('cancelProfile').addEventListener('click', () => profileDialog.close());
-        profileDialog.addEventListener('click', event => {
-            const bounds = profileDialog.getBoundingClientRect();
-            if (event.target === profileDialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) profileDialog.close();
-        });
-        profileDialog.addEventListener('close', () => {
-            profileDialog.querySelector('form').reset();
-            setMenu(true);
-            document.getElementById('editProfile').focus();
-        });
-        @if($errors->profile->any()) openProfile(); @endif
     </script>
 </body>
 </html>
