@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Storage;
+use App\Services\ProfileImageService;
 
 class AuthController extends Controller
 {
@@ -69,9 +70,12 @@ class AuthController extends Controller
         return response()->json(['message' => 'Si tu correo está pendiente, enviamos un enlace de verificación.']);
     }
 
-    public function images(Request $request)
-    {
-        $request->validate([
+    
+    public function images(
+        Request $request,
+        ProfileImageService $imageService
+    ) {
+        $data = $request->validate([
             'avatar' => [
                 'required_without:cover',
                 'image',
@@ -88,69 +92,17 @@ class AuthController extends Controller
             ],
         ]);
 
-        $user = $request->user();
-
-        $fields = [
-            'avatar' => ['avatar_path', 'users/avatars'],
-            'cover' => ['cover_image_path', 'users/covers'],
-        ];
-
-        $newPaths = [];
-        $oldPaths = [];
-
-        try {
-            foreach ($fields as $input => [$column, $directory]) {
-                if (! $request->hasFile($input)) {
-                    continue;
-                }
-
-                $path = $request->file($input)->store($directory, 'public');
-
-                if ($path === false) {
-                    throw new \RuntimeException(
-                        'No se pudo guardar la imagen.'
-                    );
-                }
-
-                $newPaths[] = $path;
-
-                // Solo considera archivos personalizados de esta carpeta.
-                $previousPath = $user->{$column};
-
-                if (
-                    $previousPath &&
-                    str_starts_with($previousPath, $directory . '/')
-                ) {
-                    $oldPaths[] = $previousPath;
-                }
-
-                $user->{$column} = $path;
-            }
-
-            $user->saveOrFail();
-        } catch (\Throwable $exception) {
-            // Si falla el guardado, limpia los archivos nuevos.
-            // Conserva el error original si también falla la limpieza.
-            try {
-                Storage::disk('public')->delete($newPaths);
-            } catch (\Throwable $cleanupException) {
-                report($cleanupException);
-            }
-
-            throw $exception;
-        }
-
-        // La actualización ya se guardó. Un fallo de limpieza
-        // no debe hacer que la petición parezca fallida.
-        try {
-            Storage::disk('public')->delete($oldPaths);
-        } catch (\Throwable $cleanupException) {
-            report($cleanupException);
-        }
+        $user = $imageService->update(
+            $request->user(),
+            array_filter([
+                'avatar' => $data['avatar'] ?? null,
+                'cover' => $data['cover'] ?? null,
+            ])
+        );
 
         return response()->json([
             'message' => 'Imágenes actualizadas correctamente.',
-            'data' => $user->fresh(),
+            'data' => $user,
         ]);
     }
 }
