@@ -11,6 +11,12 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
+
+Route::get('/proyectos/create', [ProjectController::class, 'create'])
+    ->middleware(['auth', 'verified'])
+    ->name('projects.create');
+
+
 Route::get('/proyectos/{project:slug}', [ProjectController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('projects.show');
