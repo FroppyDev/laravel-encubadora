@@ -1,4 +1,6 @@
+
 name: incubadora-fic
+
 services:
   app:
     build: .
@@ -14,14 +16,22 @@ services:
       DB_DATABASE: ${DB_DATABASE:-incubadora}
       DB_USERNAME: ${DB_USERNAME:-incubadora}
       DB_PASSWORD: ${DB_PASSWORD:-local-only-password}
+
+      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:27017/?authSource=admin
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-incubadora_media}
+
       MAIL_MAILER: smtp
       MAIL_HOST: ${DOCKER_MAIL_HOST:-mailpit}
       MAIL_PORT: ${DOCKER_MAIL_PORT:-1025}
+
     depends_on:
       db:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
       mailpit:
         condition: service_started
+
   db:
     image: postgres:17-bookworm
     environment:
@@ -37,10 +47,36 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongodb:/data/db
+    ports:
+      - "127.0.0.1:27017:27017"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--quiet",
+          "--eval",
+          "db.adminCommand('ping').ok"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
   mailpit:
     image: axllent/mailpit:v1.27
     ports:
       - "127.0.0.1:8025:8025"
+
 volumes:
   postgres:
+  mongodb:
   vendor:
