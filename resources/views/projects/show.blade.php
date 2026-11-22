@@ -1,11 +1,7 @@
+@extends('layouts.navbar')
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $project->title }} · Incubadora FIC</title>
-
+@section('styles')
+    @parent
     <style>
         * {
             box-sizing: border-box;
@@ -91,21 +87,10 @@
             }
         }
     </style>
-</head>
+@endsection
 
-<body>
-
-    <header>
-        <nav class="navigation">
-            <strong style="color:#1769d2;font-size:22px">
-                EncubadoraFIC
-            </strong>
-        </nav>
-    </header>
-
-    <main>
-
-        <a href="{{ route('home') }}" class="back">
+@section('content-navbar')
+    <a href="{{ route('home') }}" class="back">
             ← Volver a explorar proyectos
         </a>
 
@@ -136,8 +121,4 @@
             </div>
 
         </section>
-
-    </main>
-
-</body>
-</html>
+@endsection

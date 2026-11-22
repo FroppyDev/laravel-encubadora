@@ -1,27 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Incubadora FIC</title>
-
+@extends('layouts.navbar')
+@section('styles')
+    @parent
     <style>
 
-        body {
-            margin: 0;
-            background: #F3F6FA;
-            color: #243553;
-            font-family: Arial, Helvetica, sans-serif;
-            line-height: 1.6;
-        }
-
-        :root {
-            --navy: #142D4E;
-            --blue: #246BCE;
-            --muted: #64748B;
-            --border: #E4E8F0;
-        }
-
+        body{margin:0;background:#f5f7fb;color:#243553;font:16px/1.6 Arial,Helvetica,sans-serif}
         .create-project {
             max-width: 1200px;
             margin: 0 auto;
@@ -288,22 +270,9 @@
         }
 
     </style>
-</head>
-
-<body>
-
-    <main class="create-project">
-
-        <header class="create-header">
-            <div>
-                <span class="eyebrow">ENCUBADORA FIC / PROYECTOS</span>
-                <h1>Dale vida a tu idea.</h1>
-                <p>
-                    Comparte tu proyecto con la comunidad y encuentra
-                    personas que quieran construirlo contigo.
-                </p>
-            </div>
-        </header>
+@endsection
+    
+@section('content-navbar')
 
         <div class="create-layout">
 
@@ -432,6 +401,4 @@
         </div>
 
     </main>
-
-</body>
-</html>
+@endsection

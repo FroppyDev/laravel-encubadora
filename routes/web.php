@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProfileImageController;
+use App\Services\ProfileImageService;
 
 Route::get('/', function () {
     return redirect('/login');

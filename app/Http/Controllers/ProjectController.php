@@ -15,7 +15,7 @@ class ProjectController extends Controller
             'comments.user',
             'updates.user',
         ]);
-
+        
         return view('projects.show', compact('project'));
     }
 
