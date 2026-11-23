@@ -22,6 +22,9 @@ Route::get('/proyectos/{project:slug}', [ProjectController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('projects.show');
 
+Route::post('/projects', [ProjectController::class, 'store'])
+    ->name('projects.store');
+
 Route::get('/home', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('home');
 
 Route::patch('/profile', [HomeController::class, 'updateProfile'])->middleware(['auth', 'verified'])->name('profile.update');

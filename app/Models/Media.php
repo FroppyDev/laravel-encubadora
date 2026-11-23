@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use MongoDB\Laravel\Eloquent\Model;
-
+use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
@@ -31,4 +30,11 @@ class Media extends Model
         'project_ids' => 'array',
         'size' => 'integer',
     ];
+
+    public function getUrlAttribute(): string
+    {
+        return \Illuminate\Support\Facades\Storage::disk(
+            $this->disk
+        )->url($this->path);
+    }
 }
