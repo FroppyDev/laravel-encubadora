@@ -1,11 +1,7 @@
+@extends('layouts.navbar')
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $project->title }} · Incubadora FIC</title>
-
+@section('styles')
+    @parent
     <style>
         * {
             box-sizing: border-box;
@@ -81,6 +77,23 @@
             overflow-wrap: anywhere;
         }
 
+        .project-cover {
+            width: 100%;
+            max-height: 420px;
+            margin-bottom: 28px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #edf2f7;
+        }
+
+        .project-cover img {
+            display: block;
+            width: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            object-position: center;
+        }
+
         @media(max-width: 600px) {
             .project-header {
                 padding: 28px;
@@ -91,25 +104,24 @@
             }
         }
     </style>
-</head>
+@endsection
 
-<body>
-
-    <header>
-        <nav class="navigation">
-            <strong style="color:#1769d2;font-size:22px">
-                EncubadoraFIC
-            </strong>
-        </nav>
-    </header>
-
-    <main>
-
-        <a href="{{ route('home') }}" class="back">
+@section('content-navbar')
+    <a href="{{ route('home') }}" class="back">
             ← Volver a explorar proyectos
         </a>
 
         <section class="project-header">
+
+
+            @if ($project->image_url)
+                <div class="project-cover">
+                    <img
+                        src="{{ $project->image_url }}"
+                        alt="Portada de {{ $project->title }}"
+                    >
+                </div>
+            @endif
 
             <span class="category">
                 {{ $project->category?->name }}
@@ -136,8 +148,4 @@
             </div>
 
         </section>
-
-    </main>
-
-</body>
-</html>
+@endsection

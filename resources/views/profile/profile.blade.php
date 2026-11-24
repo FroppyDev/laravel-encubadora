@@ -1,10 +1,7 @@
+@extends('layouts.navbar')
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mi perfil · EncubadoraFIC</title>
+@section('styles')
+    @parent
 
     <style>
         * {
@@ -24,41 +21,6 @@
             --blue: #246BCE;
             --muted: #64748B;
             --border: #E4E8F0;
-        }
-
-        header {
-            background: white;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .navigation {
-            max-width: 1100px;
-            margin: auto;
-            padding: 18px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-
-        .brand {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--blue);
-            text-decoration: none;
-        }
-
-        .back-link {
-            text-decoration: none;
-            color: var(--navy);
-            font-weight: 600;
-            padding: 9px 15px;
-            border: 1px solid var(--border);
-            border-radius: 9px;
-        }
-
-        .back-link:hover {
-            background: #F1F5FF;
         }
 
         main {
@@ -92,12 +54,10 @@
         }
 
         /* Portada */
-
         .cover {
             height: 220px;
             position: relative;
-            background:
-                linear-gradient(120deg, #142D4E, #367DC8, #7EAFD3);
+            background: linear-gradient(120deg, #142D4E, #367DC8, #7EAFD3);
             overflow: hidden;
         }
 
@@ -110,6 +70,7 @@
             background: rgba(255,255,255,.08);
             top: -130px;
             right: 50px;
+            pointer-events: none;
         }
 
         .cover::after {
@@ -121,6 +82,7 @@
             background: rgba(255,255,255,.07);
             bottom: -150px;
             left: 80px;
+            pointer-events: none;
         }
 
         .cover img {
@@ -129,10 +91,46 @@
             object-fit: cover;
             position: absolute;
             inset: 0;
+            z-index: 1;
+        }
+
+        /* Capa interactiva para cambiar imágenes */
+        .image-change-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 12px;
+            background: rgba(20, 45, 78, .62);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity .2s ease;
+        }
+
+        .cover:hover .image-change-overlay,
+        .cover:focus-within .image-change-overlay,
+        .avatar-wrapper:hover .image-change-overlay,
+        .avatar-wrapper:focus-within .image-change-overlay {
+            opacity: 1;
+        }
+
+        .image-change-overlay:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: -6px;
+        }
+
+        .image-file-input {
+            display: none;
         }
 
         /* Información del usuario */
-
         .profile-info {
             padding: 0 35px 30px;
         }
@@ -152,12 +150,19 @@
             color: var(--blue);
             font-size: 38px;
             font-weight: bold;
+            z-index: 4;
         }
 
         .avatar-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .avatar-wrapper .image-change-overlay {
+            border-radius: 50%;
+            font-size: 11px;
+            line-height: 1.3;
         }
 
         .profile-info h2 {
@@ -188,7 +193,6 @@
         }
 
         /* Formulario */
-
         .edit-card {
             padding: 30px 35px;
         }
@@ -308,65 +312,12 @@
             font-weight: 600;
         }
 
-
-        .image-upload {
-            position: absolute;
-            z-index: 2;
-            right: 15px;
-            bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .image-upload input,
-        .avatar-upload input {
-            display: none;
-        }
-
-        .image-button,
-        .avatar-button {
-            display: inline-block;
-            padding: 9px 13px;
-            border-radius: 9px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .image-button {
-            background: rgba(20,45,78,.8);
-            color: white;
-        }
-
-        .avatar-upload {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .avatar-button {
-            background: #EAF2FF;
-            color: #246BCE;
-            border: 1px solid #D9E7FA;
-        }
-
-        .image-upload button,
-        .avatar-upload button {
-            padding: 9px 13px;
-            border-radius: 9px;
-            font-size: 13px;
-        }
-
-        @media(max-width:600px) {
-            .image-upload {
-                flex-wrap: wrap;
-                justify-content: flex-end;
+        @media (hover: none) {
+            /* En pantallas táctiles no existe hover: mostramos la indicación. */
+            .image-change-overlay {
+                opacity: .72;
             }
         }
-
 
         @media(max-width: 600px) {
             .navigation {
@@ -404,25 +355,16 @@
                 text-align: center;
             }
         }
+
+        @media(prefers-reduced-motion: reduce) {
+            .image-change-overlay {
+                transition: none;
+            }
+        }
     </style>
-</head>
+@endsection
 
-<body>
-
-<header>
-    <nav class="navigation">
-        <a href="{{ route('home') }}" class="brand">
-            EncubadoraFIC
-        </a>
-
-        <a href="{{ route('home') }}" class="back-link">
-            ← Volver al inicio
-        </a>
-    </nav>
-</header>
-
-<main>
-
+@section('content-navbar')
     <div class="page-heading">
         <h1>Mi perfil</h1>
         <p>Administra tu información personal y personaliza tu perfil.</p>
@@ -444,122 +386,107 @@
 
     @php
         $user = auth()->user();
-
         $avatarUrl = $user->avatar_url;
         $coverUrl = $user->cover_image_url;
-
         $initial = mb_strtoupper(mb_substr($user->name, 0, 1));
     @endphp
 
-    <!-- Tarjeta de presentación -->
+    <form
+        id="profileForm"
+        method="POST"
+        action="{{ route('profile.update') }}"
+        enctype="multipart/form-data"
+    >
+        @csrf
+        @method('PATCH')
 
-    <section class="profile-card">
+        <!-- Tarjeta de presentación -->
+        <section class="profile-card">
 
-        
-        <div class="cover">
-            <img
-                id="coverPreview"
-                src="{{ $user->cover_image_url }}"
-                alt="Portada del perfil"
-            >
-
-            <form
-                action="{{ route('profile.images.update') }}"
-                method="POST"
-                enctype="multipart/form-data"
-                class="image-upload cover-upload"
-            >
-                @csrf
-
-                <label for="coverInput" class="image-button">
-                    📷 Cambiar portada
-                </label>
+            <div class="cover">
+                <img
+                    id="coverPreview"
+                    src="{{ $coverUrl ?? '' }}"
+                    alt="Portada del perfil"
+                    style="{{ $coverUrl ? '' : 'display:none;' }}"
+                >
 
                 <input
+                    class="image-file-input"
                     type="file"
                     id="coverInput"
                     name="cover"
                     accept="image/jpeg,image/png,image/webp"
-                    required
                 >
 
-                <button type="submit">Guardar portada</button>
-            </form>
-        </div>
-
-
-        <div class="profile-info">
-
-            <div class="avatar-wrapper">
-                @if($avatarUrl)
-                    <img src="{{ $avatarUrl }}" alt="Foto de perfil">
-                @else
-                    {{ $initial }}
-                @endif
+                <label
+                    for="coverInput"
+                    class="image-change-overlay"
+                    title="Cambiar foto de portada"
+                    aria-label="Cambiar foto de portada"
+                >
+                    <span aria-hidden="true">📷</span>
+                    Cambiar foto de portada
+                </label>
             </div>
 
+            <div class="profile-info">
 
-            <form
-                action="{{ route('profile.images.update') }}"
-                method="POST"
-                enctype="multipart/form-data"
-                class="avatar-upload"
-            >
-                @csrf
+                <div class="avatar-wrapper" id="avatarWrapper">
+                    @if($avatarUrl)
+                        <img
+                            id="avatarPreview"
+                            src="{{ $avatarUrl }}"
+                            alt="Foto de perfil"
+                        >
+                    @else
+                        <span id="avatarInitial">{{ $initial }}</span>
+                    @endif
 
-                <label for="avatarInput" class="avatar-button">
-                    📷 Cambiar foto de perfil
-                </label>
+                    <input
+                        class="image-file-input"
+                        type="file"
+                        id="avatarInput"
+                        name="avatar"
+                        accept="image/jpeg,image/png,image/webp"
+                    >
 
-                <input
-                    type="file"
-                    id="avatarInput"
-                    name="avatar"
-                    accept="image/jpeg,image/png,image/webp"
-                    required
-                >
+                    <label
+                        for="avatarInput"
+                        class="image-change-overlay"
+                        title="Cambiar foto de perfil"
+                        aria-label="Cambiar foto de perfil"
+                    >
+                        <span aria-hidden="true">📷</span>
+                        Cambiar foto de perfil
+                    </label>
+                </div>
 
-                <button type="submit" class="save-button">
-                    Guardar fotografía
-                </button>
-            </form>
+                <h2>{{ $user->name }}</h2>
 
+                <p class="email">
+                    {{ $user->email }}
+                </p>
 
-            <h2>{{ $user->name }}</h2>
+                <hr class="divider">
 
-            <p class="email">
-                {{ $user->email }}
+                <p class="bio">
+                    {{ $user->bio ?: 'Comparte tus intereses y lo que te gustaría construir con la comunidad.' }}
+                </p>
+
+            </div>
+        </section>
+
+        <!-- Formulario de edición -->
+        <section class="edit-card">
+
+            <h2>Editar información</h2>
+
+            <p class="description">
+                Tu nombre y biografía ayudan a que otros estudiantes te conozcan.
             </p>
-
-            <hr class="divider">
-
-            <p class="bio">
-                {{ $user->bio ?: 'Comparte tus intereses y lo que te gustaría construir con la comunidad.' }}
-            </p>
-
-        </div>
-    </section>
-
-    <!-- Formulario de edición -->
-
-    <section class="edit-card">
-
-        <h2>Editar información</h2>
-
-        <p class="description">
-            Tu nombre y biografía ayudan a que otros estudiantes te conozcan.
-        </p>
-
-        <form
-            id="profileForm"
-            method="POST"
-            action="{{ route('profile.update') }}"
-        >
-            @csrf
-            @method('PATCH')
 
             <div class="form-group">
-
                 <label for="name">Nombre</label>
 
                 <input
@@ -579,11 +506,9 @@
                 <small id="nameCounter">
                     {{ mb_strlen(old('name', $user->name)) }}/100
                 </small>
-
             </div>
 
             <div class="form-group">
-
                 <label for="bio">Biografía</label>
 
                 <textarea
@@ -600,11 +525,9 @@
                 <small id="bioCounter">
                     {{ mb_strlen(old('bio', $user->bio ?? '')) }}/2000
                 </small>
-
             </div>
 
             <div class="form-actions">
-
                 <a href="{{ route('home') }}" class="cancel-button">
                     Cancelar
                 </a>
@@ -612,59 +535,78 @@
                 <button type="submit" class="save-button" id="saveButton">
                     Guardar cambios
                 </button>
-
             </div>
 
-        </form>
+        </section>
+    </form>
+@endsection
 
-    </section>
+@section('scripts')
+    <script>
+        const nameInput = document.getElementById('name');
+        const bioInput = document.getElementById('bio');
 
-</main>
+        const nameCounter = document.getElementById('nameCounter');
+        const bioCounter = document.getElementById('bioCounter');
 
-<script>
-    const nameInput = document.getElementById('name');
-    const bioInput = document.getElementById('bio');
+        const avatarInput = document.getElementById('avatarInput');
+        const coverInput = document.getElementById('coverInput');
 
-    const nameCounter = document.getElementById('nameCounter');
-    const bioCounter = document.getElementById('bioCounter');
+        // Contador del nombre.
+        nameInput.addEventListener('input', () => {
+            nameCounter.textContent = `${nameInput.value.length}/100`;
+        });
 
-    nameInput.addEventListener('input', () => {
-        nameCounter.textContent = `${nameInput.value.length}/100`;
-    });
+        // Contador de la biografía.
+        bioInput.addEventListener('input', () => {
+            bioCounter.textContent = `${bioInput.value.length}/2000`;
+        });
 
-    bioInput.addEventListener('input', () => {
-        bioCounter.textContent = `${bioInput.value.length}/2000`;
-    });
+        // Vista previa de la foto de perfil.
+        avatarInput.addEventListener('change', function () {
+            const file = this.files[0];
 
-    document.getElementById('profileForm').addEventListener('submit', () => {
-        const button = document.getElementById('saveButton');
-        button.disabled = true;
-        button.textContent = 'Guardando...';
-    });
+            if (!file) return;
 
+            const wrapper = document.getElementById('avatarWrapper');
+            let img = document.getElementById('avatarPreview');
 
-    const avatarInput = document.getElementById('avatarInput');
-    const coverInput = document.getElementById('coverInput');
+            if (!img) {
+                const initial = document.getElementById('avatarInitial');
 
-    avatarInput.addEventListener('change', function () {
-        const file = this.files[0];
+                if (initial) {
+                    initial.remove();
+                }
 
-        if (file) {
-            document.querySelector('.avatar-wrapper img').src =
-                URL.createObjectURL(file);
-        }
-    });
+                img = document.createElement('img');
+                img.id = 'avatarPreview';
+                img.alt = 'Foto de perfil';
 
-    coverInput.addEventListener('change', function () {
-        const file = this.files[0];
+                // La imagen queda debajo de la capa que permite cambiarla.
+                wrapper.insertBefore(img, wrapper.querySelector('.image-file-input'));
+            }
 
-        if (file) {
-            document.getElementById('coverPreview').src =
-                URL.createObjectURL(file);
-        }
-    });
+            img.src = URL.createObjectURL(file);
+        });
 
-</script>
+        // Vista previa de la portada.
+        coverInput.addEventListener('change', function () {
+            const file = this.files[0];
 
-</body>
-</html>
+            if (!file) return;
+
+            const preview = document.getElementById('coverPreview');
+
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+        });
+
+        // Evitar envíos duplicados.
+        document.getElementById('profileForm').addEventListener('submit', () => {
+            const button = document.getElementById('saveButton');
+
+            button.disabled = true;
+            button.textContent = 'Guardando cambios...';
+        });
+    </script>
+@endsection

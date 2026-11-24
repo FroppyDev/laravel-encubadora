@@ -6,14 +6,24 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProfileImageController;
+use App\Services\ProfileImageService;
 
 Route::get('/', function () {
     return redirect('/login');
 });
 
+
+Route::get('/proyectos/create', [ProjectController::class, 'create'])
+    ->middleware(['auth', 'verified'])
+    ->name('projects.create');
+
+
 Route::get('/proyectos/{project:slug}', [ProjectController::class, 'show'])
     ->middleware(['auth', 'verified'])
     ->name('projects.show');
+
+Route::post('/projects', [ProjectController::class, 'store'])
+    ->name('projects.store');
 
 Route::get('/home', [HomeController::class, 'index'])->middleware(['auth', 'verified'])->name('home');
 

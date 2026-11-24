@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Technology;
 
 class DemoProjectsSeeder extends Seeder
 {
@@ -24,6 +25,151 @@ class DemoProjectsSeeder extends Seeder
 
         // Categorías
         $categories = [];
+
+        $technologies = [
+            // Lenguajes de programación
+            'PHP',
+            'JavaScript',
+            'TypeScript',
+            'Python',
+            'Java',
+            'Kotlin',
+            'Swift',
+            'C',
+            'C++',
+            'C#',
+            'Go',
+            'Rust',
+            'Ruby',
+            'Dart',
+            'R',
+            'SQL',
+
+            // Desarrollo frontend
+            'HTML5',
+            'CSS3',
+            'Sass',
+            'Tailwind CSS',
+            'Bootstrap',
+            'React',
+            'Vue.js',
+            'Angular',
+            'Next.js',
+            'Nuxt.js',
+            'Svelte',
+            'Astro',
+
+            // Desarrollo backend
+            'Laravel',
+            'Node.js',
+            'Express.js',
+            'NestJS',
+            'Django',
+            'Flask',
+            'FastAPI',
+            'Spring Boot',
+            '.NET',
+            'ASP.NET Core',
+            'Ruby on Rails',
+            'Symfony',
+
+            // Desarrollo móvil
+            'Android',
+            'Android Jetpack Compose',
+            'React Native',
+            'Flutter',
+            'Ionic',
+            'Xamarin',
+            'SwiftUI',
+
+            // Bases de datos
+            'MySQL',
+            'PostgreSQL',
+            'MongoDB',
+            'SQLite',
+            'MariaDB',
+            'Microsoft SQL Server',
+            'Oracle Database',
+            'Redis',
+            'Firebase Firestore',
+            'Supabase',
+
+            // Inteligencia artificial y ciencia de datos
+            'TensorFlow',
+            'PyTorch',
+            'Scikit-learn',
+            'Keras',
+            'Pandas',
+            'NumPy',
+            'OpenCV',
+            'Hugging Face',
+            'LangChain',
+            'Apache Spark',
+
+            // DevOps e infraestructura
+            'Docker',
+            'Kubernetes',
+            'Git',
+            'GitHub',
+            'GitLab',
+            'Jenkins',
+            'GitHub Actions',
+            'Linux',
+            'Nginx',
+            'Apache',
+            'Terraform',
+            'Ansible',
+
+            // Cloud y servicios
+            'Amazon Web Services',
+            'Microsoft Azure',
+            'Google Cloud Platform',
+            'Vercel',
+            'Netlify',
+            'Cloudflare',
+            'Firebase',
+            'DigitalOcean',
+
+            // APIs y comunicación
+            'REST API',
+            'GraphQL',
+            'WebSockets',
+            'gRPC',
+            'Postman',
+            'Swagger / OpenAPI',
+
+            // Diseño y prototipado
+            'Figma',
+            'Adobe XD',
+            'Adobe Photoshop',
+            'Adobe Illustrator',
+            'Canva',
+
+            // Herramientas de desarrollo
+            'Visual Studio Code',
+            'Visual Studio',
+            'Android Studio',
+            'IntelliJ IDEA',
+            'PhpStorm',
+            'WebStorm',
+
+            // Blockchain y tecnologías emergentes
+            'Ethereum',
+            'Solidity',
+            'Web3.js',
+            'Unity',
+            'Unreal Engine',
+            'Godot',
+        ];
+
+        foreach ($technologies as $name) {
+            $slug = str($name)->slug()->toString();
+
+            Technology::firstOrCreate(
+                ['slug' => $slug],
+                ['name' => $name]
+            );
+        }
 
         foreach ([
             'software' => 'Software',
