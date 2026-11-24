@@ -77,6 +77,23 @@
             overflow-wrap: anywhere;
         }
 
+        .project-cover {
+            width: 100%;
+            max-height: 420px;
+            margin-bottom: 28px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #edf2f7;
+        }
+
+        .project-cover img {
+            display: block;
+            width: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            object-position: center;
+        }
+
         @media(max-width: 600px) {
             .project-header {
                 padding: 28px;
@@ -95,6 +112,16 @@
         </a>
 
         <section class="project-header">
+
+
+            @if ($project->image_url)
+                <div class="project-cover">
+                    <img
+                        src="{{ $project->image_url }}"
+                        alt="Portada de {{ $project->title }}"
+                    >
+                </div>
+            @endif
 
             <span class="category">
                 {{ $project->category?->name }}

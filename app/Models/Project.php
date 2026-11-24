@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Media;
 
 class Project extends Model
@@ -75,4 +76,25 @@ class Project extends Model
 
         return Media::find($this->cover_media_id);
     }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        // Si el proyecto tiene una imagen almacenada en MongoDB.
+        if ($this->cover_media_id) {
+
+            $media = Media::find($this->cover_media_id);
+
+            if ($media) {
+                return Storage::disk($media->disk)->url($media->path);
+            }
+        }
+
+        // Compatibilidad con imágenes anteriores guardadas directamente en SQL.
+        if ($this->cover_image_path) {
+            return Storage::disk('public')->url($this->cover_image_path);
+        }
+
+        return null;
+    }
+
 }
