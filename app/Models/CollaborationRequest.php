@@ -8,8 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class CollaborationRequest extends Model
 {
     use HasFactory;
-
-    protected $fillable = ['message'];
+    protected $fillable = [
+        'project_id',
+        'user_id',
+        'message',
+        'status',
+    ];
 
     public function project()
     {

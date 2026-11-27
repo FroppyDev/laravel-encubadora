@@ -9,7 +9,12 @@ class Comment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['body', 'parent_id'];
+    protected $fillable = [
+        'project_id',
+        'user_id',
+        'body',
+        'parent_id',
+    ];
 
     public function project()
     {

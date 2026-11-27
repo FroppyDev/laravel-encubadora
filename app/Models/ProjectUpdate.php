@@ -9,8 +9,13 @@ class ProjectUpdate extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'body'];
-
+    protected $fillable = [
+        'project_id',
+        'user_id',
+        'title',
+        'body',
+    ];
+    
     public function project()
     {
         return $this->belongsTo(Project::class);

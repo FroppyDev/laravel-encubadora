@@ -169,7 +169,7 @@
             <div class="menu-section">
                 <p class="menu-title">Colecciones</p>
                 <ul class="menu-list">
-                    <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Mis proyectos</a></li>
+                    <li><a class="menu-link" href="{{ route('projects.myProjects') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Mis proyectos</a></li>
                     <li><a class="menu-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>Proyectos guardados</a></li>
                 </ul>
             </div>

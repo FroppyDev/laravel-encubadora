@@ -9,7 +9,11 @@ class ProjectReaction extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['type'];
+    protected $fillable = [
+        'project_id',
+        'user_id',
+        'type',
+    ];
 
     public function project()
     {

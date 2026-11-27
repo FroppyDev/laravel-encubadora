@@ -1,4 +1,3 @@
-
 @extends('layouts.navbar')
 
 @section('styles')
@@ -251,7 +250,13 @@
             border: 1px solid #CBD5E1;
         }
 
-        /* ===== Selector de tecnologías ===== */
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
+        /* Selector de tecnologías */
 
         .technology-selector {
             display: flex;
@@ -389,6 +394,38 @@
             font-size: 13px;
         }
 
+        .button-project {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #1769d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .btn-delete {
+            padding: 12px 20px;
+            border-radius: 9px;
+            font-weight: 650;
+            font-size: 13px;
+            cursor: pointer;
+            background: #fff;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            transition: .2s;
+        }
+
+        .btn-delete:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+
+        .btn-delete:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 850px) {
             .create-layout {
                 grid-template-columns: 1fr;
@@ -420,6 +457,15 @@
 @endsection
 
 @section('content-navbar')
+
+    @php
+        $project = $project ?? null;
+
+        $selectedTechnologyIds = old(
+            'technologies',
+            $project?->technologies?->pluck('id')->toArray() ?? []
+        );
+    @endphp
 
     <div class="create-project">
 
@@ -456,165 +502,178 @@
             id="projectForm"
             action="{{ route('projects.store') }}"
             method="POST"
-            enctype="multipart/form-data">
-        @csrf
+            enctype="multipart/form-data"
+        >
+            @csrf
 
-        <input type="hidden" name="action" id="projectAction" value="">
+            @if($project)
+                <input type="hidden" name="project_id" value="{{ $project->id }}">
+            @endif
 
-        <div class="create-layout">
+            <input type="hidden" name="action" id="projectAction" value="">
 
-            <!-- FORMULARIO -->
-            <section class="form-column">
+            <div class="create-layout">
 
-                <div class="form-card">
-                    <h2>Información general</h2>
+                <!-- FORMULARIO -->
+                <section class="form-column">
 
-                    <div class="field">
-                        <label for="title">Título del proyecto</label>
+                    <div class="form-card">
+                        <h2>Información general</h2>
 
-                        <input
-                            id="title"
-                            name="title"
-                            type="text"
-                            maxlength="180"
-                            value="{{ old('title') }}"
-                            placeholder="Ej. Plataforma de aprendizaje..."
-                            required
-                        >
+                        <div class="field">
+                            <label for="title">Título del proyecto</label>
 
-                        <small>Máximo 180 caracteres</small>
-                    </div>
-
-                    <div class="field">
-                        <label for="summary">Resumen</label>
-
-                        <textarea
-                            id="summary"
-                            name="summary"
-                            maxlength="500"
-                            rows="3"
-                            placeholder="Describe brevemente tu proyecto..."
-                            required
-                        >{{ old('summary') }}</textarea>
-
-                        <small>Máximo 500 caracteres</small>
-                    </div>
-
-                    <div class="field">
-                        <label for="category">Categoría</label>
-
-                        <select id="category" name="category" required>
-                            <option value="">Selecciona una categoría</option>
-
-                            @foreach($categories as $category)
-                                <option
-                                    value="{{ $category->id }}"
-                                    @selected(old('category') == $category->id)
-                                >
-                                    {{ $category->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <h2>Acerca del proyecto</h2>
-
-                    <div class="field">
-                        <label for="description">Descripción completa</label>
-
-                        <textarea
-                            id="description"
-                            name="description"
-                            rows="10"
-                            maxlength="20000"
-                            placeholder="Explica tu proyecto, sus objetivos y lo que buscas conseguir..."
-                            required
-                        >{{ old('description') }}</textarea>
-
-                        <small>Máximo 20,000 caracteres</small>
-                    </div>
-
-                    <!-- SELECTOR DE TECNOLOGÍAS -->
-                    <div class="field">
-                        <label> Tecnologías utilizadas </label>
-
-                        <div class="technology-selector">
-
-                            <!-- Buscador -->
-                            <div class="technology-search">
-                                <span class="technology-search-icon">⌕</span>
-
-                                <input
-                                    type="search"
-                                    id="technologySearch"
-                                    placeholder="Buscar tecnologías..."
-                                    autocomplete="off"
-                                >
-                            </div>
-
-                            <!-- Tecnologías seleccionadas -->
-                            <div
-                                class="selected-technologies"
-                                id="selectedTechnologies"
+                            <input
+                                id="title"
+                                name="title"
+                                type="text"
+                                maxlength="180"
+                                value="{{ old('title', $project?->title) }}"
+                                placeholder="Ej. Plataforma de aprendizaje..."
+                                required
                             >
-                                <span class="selected-empty">
-                                    Todavía no has seleccionado tecnologías.
-                                </span>
-                            </div>
 
-                            <!-- Contador -->
-                            <div class="technology-count">
-                                <span>Selecciona las tecnologías de tu proyecto</span>
-                                <span id="technologyCount">0 seleccionadas</span>
-                            </div>
+                            <small>Máximo 180 caracteres</small>
+                        </div>
 
-                            <!-- Lista de tecnologías -->
-                            <div class="technology-list" id="technologyList">
+                        <div class="field">
+                            <label for="summary">Resumen</label>
 
-                                @foreach($technologies as $technology)
-                                    <label class="technology-option">
-                                        <input
-                                            type="checkbox"
-                                            name="technologies[]"
-                                            value="{{ $technology->id }}"
-                                            data-name="{{ $technology->name }}"
-                                            @checked(
-                                                in_array(
-                                                    $technology->id,
-                                                    old('technologies', [])
-                                                )
-                                            )
-                                        >
+                            <textarea
+                                id="summary"
+                                name="summary"
+                                maxlength="500"
+                                rows="3"
+                                placeholder="Describe brevemente tu proyecto..."
+                                required
+                            >{{ old('summary', $project?->summary) }}</textarea>
 
-                                        <span>{{ $technology->name }}</span>
-                                    </label>
+                            <small>Máximo 500 caracteres</small>
+                        </div>
+
+                        <div class="field">
+                            <label for="category">Categoría</label>
+
+                            <select id="category" name="category" required>
+                                <option value="">Selecciona una categoría</option>
+
+                                @foreach($categories as $category)
+                                    <option
+                                        value="{{ $category->id }}"
+                                        @selected(old('category_id', $project?->category) == $category->id)
+                                    >
+                                        {{ $category->name }}
+                                    </option>
                                 @endforeach
-
-                                <div class="technology-empty" id="technologyEmpty">
-                                    No se encontraron tecnologías.
-                                </div>
-
-                            </div>
-
-                            <small>
-                                Puedes seleccionar varias tecnologías y quitarlas cuando quieras.
-                            </small>
-
+                            </select>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-actions">
+                    <div class="form-card">
+                        <h2>Acerca del proyecto</h2>
 
+                        <div class="field">
+                            <label for="description">Descripción completa</label>
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows="10"
+                                maxlength="20000"
+                                placeholder="Explica tu proyecto, sus objetivos y lo que buscas conseguir..."
+                                required
+                            >{{ old('description', $project?->description) }}</textarea>
+
+                            <small>Máximo 20,000 caracteres</small>
+                        </div>
+
+                        <!-- SELECTOR DE TECNOLOGÍAS -->
+                        <div class="field">
+                            <label for="technologySearch">Tecnologías utilizadas</label>
+
+                            <div class="technology-selector">
+
+                                <!-- Buscador -->
+                                <div class="technology-search">
+                                    <span class="technology-search-icon">⌕</span>
+
+                                    <input
+                                        type="search"
+                                        id="technologySearch"
+                                        placeholder="Buscar tecnologías..."
+                                        autocomplete="off"
+                                    >
+                                </div>
+
+                                <!-- Tecnologías seleccionadas -->
+                                <div
+                                    class="selected-technologies"
+                                    id="selectedTechnologies"
+                                >
+                                    <span class="selected-empty">
+                                        Todavía no has seleccionado tecnologías.
+                                    </span>
+                                </div>
+
+                                <!-- Contador -->
+                                <div class="technology-count">
+                                    <span>Selecciona las tecnologías de tu proyecto</span>
+                                    <span id="technologyCount">0 seleccionadas</span>
+                                </div>
+
+                                <!-- Lista de tecnologías -->
+                                <div class="technology-list" id="technologyList">
+
+                                    @foreach($technologies as $technology)
+                                        <label class="technology-option">
+                                            <input
+                                                type="checkbox"
+                                                name="technologies[]"
+                                                value="{{ $technology->id }}"
+                                                data-name="{{ $technology->name }}"
+                                                @if(in_array($technology->id, $selectedTechnologyIds))
+                                                    checked
+                                                @endif
+                                            >
+
+                                            <span>{{ $technology->name }}</span>
+                                        </label>
+                                    @endforeach
+
+                                    <div class="technology-empty" id="technologyEmpty">
+                                        No se encontraron tecnologías.
+                                    </div>
+
+                                </div>
+
+                                <small>
+                                    Puedes seleccionar varias tecnologías y quitarlas cuando quieras.
+                                </small>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BOTONES -->
                     <div class="form-actions">
+
+                        @if (isset($project))
+                            @if ($project->status === 'draft')
+                                <button
+                                    type="button"
+                                    class="btn-delete"
+                                    id="btnDelete">
+                                    Eliminar borrador
+                                </button>
+                            @endif
+                        @endif
 
                         <button
                             type="submit"
                             data-action="draft"
                             class="btn-secondary"
-                            id="btnSave">
+                            id="btnSave"
+                        >
                             Guardar borrador
                         </button>
 
@@ -622,76 +681,97 @@
                             type="submit"
                             data-action="published"
                             class="btn-primary"
-                            id="btnPublish">
+                            id="btnPublish"
+                        >
                             Publicar proyecto
                         </button>
 
                     </div>
 
-                </div>
+                </section>
 
-            </section>
+                <!-- COLUMNA LATERAL -->
+                <aside class="preview-column">
 
-            <!-- COLUMNA LATERAL -->
-            <aside class="preview-column">
+                    <div class="form-card">
+                        <h2>Imagen de portada</h2>
 
-                <div class="form-card">
-                    <h2>Imagen de portada</h2>
+                        <label class="cover-upload" for="cover">
+                            <span class="upload-icon">＋</span>
+                            <strong>Subir imagen</strong>
+                            <small>PNG, JPG o WEBP (máximo 5 MB)</small>
+                        </label>
 
-                    <label class="cover-upload" for="cover">
-                        <span class="upload-icon">＋</span>
-                        <strong>Subir imagen</strong>
-                        <small>PNG, JPG o WEBP (máximo 5 MB)</small>
-                    </label>
-
-                    <input
-                        type="file"
-                        name="cover"
-                        id="cover"
-                        accept="image/png,image/jpeg,image/webp"
-                        hidden
-                    >
-                </div>
-
-                <div class="form-card preview-card">
-
-                    <div class="preview-heading">
-                        <h2>Vista previa</h2>
-                        <span class="draft-label">Borrador</span>
+                        <input
+                            type="file"
+                            name="cover"
+                            id="cover"
+                            accept="image/png,image/jpeg,image/webp"
+                            hidden
+                        >
                     </div>
 
-                    <div class="preview-image" id="previewImage">
-                        <span>Imagen del proyecto</span>
+                    <div class="form-card preview-card">
+
+                        <div class="preview-heading">
+                            <h2>Vista previa</h2>
+                            <span class="draft-label">Borrador</span>
+                        </div>
+
+                        <div class="preview-image" id="previewImage">
+                            @if(!empty($project?->cover))
+                                <img
+                                    src="{{ asset('storage/' . $project->cover) }}"
+                                    alt="Portada del proyecto"
+                                >
+                            @else
+                                <span>Imagen del proyecto</span>
+                            @endif
+                        </div>
+
+                        <h3 id="previewTitle">
+                            {{ old('title', $project?->title) ?: 'Nombre de tu proyecto' }}
+                        </h3>
+
+                        <p id="previewSummary">
+                            {{ old('summary', $project?->summary) ?: 'Aquí aparecerá el resumen de tu proyecto cuando comiences a completar el formulario.' }}
+                        </p>
+
+                        <div class="preview-tags" id="previewCategory">
+                            <span>
+                                {{ $categories->firstWhere('id', old('category', $project?->category_id))?->name ?? 'Categoría' }}
+                            </span>
+                        </div>
+
+                        <hr>
+
+                        <small>Tecnologías</small>
+
+                        <div
+                            class="preview-tags"
+                            id="previewTechnologies"
+                        >
+                            <span>Sin tecnologías</span>
+                        </div>
+
                     </div>
 
-                    <h3 id="previewTitle">Nombre de tu proyecto</h3>
+                </aside>
 
-                    <p id="previewSummary">
-                        Aquí aparecerá el resumen de tu proyecto
-                        cuando comiences a completar el formulario.
-                    </p>
+            </div>
+        </form>
 
-                    <div class="preview-tags" id="previewCategory">
-                        <span>Categoría</span>
-                    </div>
-
-                    <hr>
-
-                    <small>Tecnologías</small>
-
-                    <div
-                        class="preview-tags"
-                        id="previewTechnologies"
-                    >
-                        <span>Sin tecnologías</span>
-                    </div>
-
-                </div>
-
-            </aside>
-
+        @if ($project && $project->exists && $project->status === 'draft')
+            <form
+                id="deleteProjectForm"
+                action="{{ route('projects.delete', $project) }}"
+                method="POST"
+                style="display: none;"
+            >
+                @csrf
+                @method('DELETE')
             </form>
-        </div>
+        @endif
 
     </div>
 
@@ -708,7 +788,6 @@
         const titleInput = document.getElementById('title');
         const summaryInput = document.getElementById('summary');
         const categorySelect = document.getElementById('category');
-        const descriptionInput = document.getElementById('description');
 
         const technologySearch = document.getElementById('technologySearch');
         const technologyList = document.getElementById('technologyList');
@@ -722,8 +801,9 @@
         const previewCategory = document.getElementById('previewCategory');
         const previewTechnologies = document.getElementById('previewTechnologies');
 
-        const btnSave = document.querySelector('.btn-secondary');
-        const btnPublish = document.querySelector('.btn-primary');
+        const btnSave = document.getElementById('btnSave');
+        const btnPublish = document.getElementById('btnPublish');
+        const btnDelete = document.getElementById('btnDelete');
 
         const technologyCheckboxes = Array.from(
             technologyList.querySelectorAll('input[type="checkbox"]')
@@ -759,6 +839,7 @@
             previewCategory.innerHTML = '';
 
             const tag = document.createElement('span');
+
             tag.textContent = categorySelect.value
                 ? selectedOption.text
                 : 'Categoría';
@@ -846,6 +927,7 @@
                     removeButton.type = 'button';
                     removeButton.className = 'remove-tech';
                     removeButton.textContent = '×';
+
                     removeButton.setAttribute(
                         'aria-label',
                         `Quitar ${checkbox.dataset.name}`
@@ -856,7 +938,6 @@
                         checkbox.checked = false;
 
                         updateSelectedTechnologies();
-
                     });
 
                     tag.appendChild(name);
@@ -901,9 +982,6 @@
 
         });
 
-        // Inicializar selector.
-        updateSelectedTechnologies();
-
         // ==========================================
         // VISTA PREVIA: IMAGEN DE PORTADA
         // ==========================================
@@ -928,6 +1006,7 @@
             previewImage.innerHTML = '';
 
             const image = document.createElement('img');
+
             image.src = coverPreviewUrl;
             image.alt = 'Vista previa de la portada del proyecto';
 
@@ -977,11 +1056,41 @@
             }
 
             // Deshabilitar ambos botones.
-            // La acción ya está guardada en el input oculto.
             btnSave.disabled = true;
             btnPublish.disabled = true;
-
         });
+
+        // ==========================================
+        // ELIMINAR BORRADOR
+        // ==========================================
+
+        const deleteProjectForm = document.getElementById('deleteProjectForm');
+
+        if (btnDelete && deleteProjectForm) {
+
+            btnDelete.addEventListener('click', () => {
+
+                const confirmation = confirm(
+                    '¿Estás seguro de que deseas eliminar este borrador? Esta acción no se puede deshacer.'
+                );
+
+                if (!confirmation) return;
+
+                // Enviar el formulario DELETE independiente
+                deleteProjectForm.submit();
+            });
+
+        }
+
+        // ==========================================
+        // INICIALIZAR VISTA PREVIA
+        // ==========================================
+
+        titleInput.dispatchEvent(new Event('input'));
+        summaryInput.dispatchEvent(new Event('input'));
+        categorySelect.dispatchEvent(new Event('change'));
+
+        updateSelectedTechnologies();
 
     </script>
 @endsection

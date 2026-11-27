@@ -7,20 +7,80 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProfileImageController;
 use App\Services\ProfileImageService;
+use App\Http\Controllers\ProjectInteractionController;
 
 Route::get('/', function () {
     return redirect('/login');
 });
 
 
-Route::get('/proyectos/create', [ProjectController::class, 'create'])
-    ->middleware(['auth', 'verified'])
-    ->name('projects.create');
+Route::middleware(['auth', 'verified'])->group(function () {
 
+    // Crear proyecto
+    Route::get('/proyectos/create/{slug?}', [ProjectController::class, 'create'])
+        ->name('projects.create')
+        ->middleware('auth');
 
-Route::get('/proyectos/{project:slug}', [ProjectController::class, 'show'])
-    ->middleware(['auth', 'verified'])
-    ->name('projects.show');
+    // Mis proyectos
+    Route::get('/proyectos/mis-proyectos', [ProjectController::class, 'myProjects'])
+        ->name('projects.myProjects');
+
+    // Mostrar proyecto
+    Route::get('/proyectos/{project:slug}', [ProjectController::class, 'show'])
+        ->name('projects.show');
+    
+    Route::delete('/proyectos/delete/{project}', [ProjectController::class, 'delete'])
+        ->name('projects.delete');
+
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    // Reacciones
+    Route::post(
+        '/proyectos/{project:slug}/reaccion',
+        [ProjectInteractionController::class, 'toggleReaction']
+    )->name('projects.reaction.toggle');
+
+    // Comentarios
+    Route::post(
+        '/proyectos/{project:slug}/comentarios',
+        [ProjectInteractionController::class, 'storeComment']
+    )->name('projects.comments.store');
+
+    Route::delete(
+        '/comentarios/{comment}',
+        [ProjectInteractionController::class, 'deleteComment']
+    )->name('projects.comments.delete');
+
+    // Colaboración
+    Route::post(
+        '/proyectos/{project:slug}/colaboracion',
+        [ProjectInteractionController::class, 'storeCollaboration']
+    )->name('projects.collaboration.store');
+
+    Route::patch(
+        '/colaboraciones/{collaborationRequest}',
+        [ProjectInteractionController::class, 'updateCollaborationStatus']
+    )->name('projects.collaboration.update');
+
+    Route::patch(
+        '/colaboraciones/{collaborationRequest}/cancelar',
+        [ProjectInteractionController::class, 'cancelCollaboration']
+    )->name('projects.collaboration.cancel');
+
+    // Actualizaciones
+    Route::post(
+        '/proyectos/{project:slug}/actualizaciones',
+        [ProjectInteractionController::class, 'storeUpdate']
+    )->name('projects.updates.store');
+
+    Route::delete(
+        '/actualizaciones/{update}',
+        [ProjectInteractionController::class, 'deleteUpdate']
+    )->name('projects.updates.delete');
+
+});
 
 Route::post('/projects', [ProjectController::class, 'store'])
     ->name('projects.store');

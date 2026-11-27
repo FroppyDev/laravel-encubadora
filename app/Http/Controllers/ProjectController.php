@@ -17,19 +17,75 @@ class ProjectController extends Controller
 {
     public function show(Project $project)
     {
+        if (
+            $project->status !== 'published' &&
+            $project->user_id !== auth()->id()
+        ) {
+            abort(404);
+        }
+
         $project->load([
             'user',
             'category',
             'technologies',
+
+            'comments' => function ($query) {
+                $query->whereNull('parent_id')
+                    ->latest();
+            },
+
             'comments.user',
+            'comments.replies.user',
+
+            'updates' => function ($query) {
+                $query->latest();
+            },
+
             'updates.user',
         ]);
-        
-        return view('projects.show', compact('project'));
+
+        $project->loadCount('reactions');
+
+        // Obtener la reacción del usuario actual.
+        $myReaction = $project->reactions()
+            ->where('user_id', auth()->id())
+            ->where('type', 'like')
+            ->first();
+
+        // Solicitud del usuario actual.
+        $myCollaborationRequest = $project->collaborationRequests()
+            ->where('user_id', auth()->id())
+            ->first();
+
+        // Solicitudes recibidas: solo para el propietario.
+        $collaborationRequests = collect();
+
+        if ($project->user_id === auth()->id()) {
+            $collaborationRequests = $project->collaborationRequests()
+                ->with('user')
+                ->latest()
+                ->get();
+        }
+
+        return view('projects.show', compact(
+            'project',
+            'myReaction',
+            'myCollaborationRequest',
+            'collaborationRequests'
+        ));
     }
 
-    public function create()
+    public function create(?string $slug = null)
     {
+
+        $project = null;
+
+        if ($slug !== null) {
+            $project = Project::where('slug', $slug)
+                ->where('user_id', auth()->id())
+                ->where('status', 'draft')
+                ->firstOrFail();
+        }
 
         $categories = Category::where('is_active', true)
             ->orderBy('name')
@@ -39,7 +95,13 @@ class ProjectController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return view('projects.create', compact('categories', 'technologies'));
+        
+
+        return view('projects.create', compact(
+            'categories',
+            'technologies',
+            'project'
+        ));
     }
 
 
@@ -48,6 +110,9 @@ class ProjectController extends Controller
     public function store(Request $request, MediaService $mediaService)
     {
         $validated = $request->validate([
+            // ID opcional: si viene, es un proyecto existente
+            'project_id' => ['nullable', 'integer'],
+
             'title' => ['required', 'string', 'max:180'],
             'summary' => ['required', 'string', 'max:500'],
 
@@ -87,21 +152,41 @@ class ProjectController extends Controller
 
         $project = null;
         $media = null;
+        $isNewProject = empty($validated['project_id']);
 
         try {
-            // 1. Crear el proyecto y asociar sus tecnologías.
+
+            /*
+            |--------------------------------------------------------------------------
+            | 1. Buscar o crear el proyecto
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$isNewProject) {
+
+                // Buscar el proyecto y asegurarse de que pertenezca al usuario.
+                $project = Project::where('id', $validated['project_id'])
+                    ->where('user_id', $request->user()->id)
+                    ->firstOrFail();
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. Guardar los datos del proyecto
+            |--------------------------------------------------------------------------
+            */
+
             $project = DB::transaction(function () use (
                 $request,
-                $validated
+                $validated,
+                $project,
+                $isNewProject
             ) {
-                $slug = Str::slug($validated['title'])
-                    . '-' . Str::lower(Str::ulid());
 
-                $project = Project::create([
-                    'user_id' => $request->user()->id,
+                $data = [
                     'category_id' => $validated['category'],
                     'title' => $validated['title'],
-                    'slug' => $slug,
                     'summary' => $validated['summary'],
                     'description' => $validated['description'],
 
@@ -118,8 +203,26 @@ class ProjectController extends Controller
                         $validated['demo_url'] ?? null,
 
                     'status' => $validated['action'],
-                ]);
+                ];
 
+                if ($isNewProject) {
+
+                    // Solamente se genera un slug al crear un proyecto nuevo.
+                    $data['user_id'] = $request->user()->id;
+
+                    $data['slug'] = Str::slug($validated['title'])
+                        . '-' . Str::lower(Str::ulid());
+
+                    $project = Project::create($data);
+
+                } else {
+
+                    // Actualizar el proyecto existente, conservando su ID y slug.
+                    $project->update($data);
+
+                }
+
+                // Sincronizar tecnologías sin duplicarlas.
                 $project->technologies()->sync(
                     $validated['technologies'] ?? []
                 );
@@ -127,15 +230,20 @@ class ProjectController extends Controller
                 return $project;
             });
 
-            // 2. Subir la portada y registrar sus metadatos en MongoDB.
+            /*
+            |--------------------------------------------------------------------------
+            | 3. Procesar portada si el usuario subió una nueva
+            |--------------------------------------------------------------------------
+            */
+
             if ($request->hasFile('cover')) {
+
                 $media = $mediaService->uploadProjectCover(
                     $request->file('cover'),
                     $request->user(),
                     $project
                 );
 
-                // 3. Guardar la referencia de MongoDB en SQL.
                 $project->update([
                     'cover_media_id' => (string) $media->getKey(),
                 ]);
@@ -143,7 +251,12 @@ class ProjectController extends Controller
 
         } catch (Throwable $exception) {
 
-            // Limpiar la imagen si ya se había registrado en MongoDB.
+            /*
+            |--------------------------------------------------------------------------
+            | 4. Limpiar la nueva imagen si ocurrió un error
+            |--------------------------------------------------------------------------
+            */
+
             if ($media) {
                 try {
                     $mediaService->delete($media);
@@ -152,8 +265,17 @@ class ProjectController extends Controller
                 }
             }
 
-            // Eliminar el proyecto recién creado si falló la operación.
-            if ($project) {
+            /*
+            |--------------------------------------------------------------------------
+            | 5. Eliminar el proyecto únicamente si era nuevo
+            |--------------------------------------------------------------------------
+            |
+            | Si estábamos editando un proyecto existente, NO lo eliminamos
+            | cuando ocurre un error.
+            |
+            */
+
+            if ($project && $isNewProject) {
                 try {
                     $project->delete();
                 } catch (Throwable $cleanupException) {
@@ -164,13 +286,84 @@ class ProjectController extends Controller
             throw $exception;
         }
 
-        $message = $project->status === 'published'
-            ? '¡Tu proyecto se publicó correctamente!'
-            : 'Tu proyecto se guardó como borrador.';
+        /*
+        |--------------------------------------------------------------------------
+        | 6. Mensaje según la operación y el estado
+        |--------------------------------------------------------------------------
+        */
+
+        if ($isNewProject) {
+
+            $message = $project->status === 'published'
+                ? '¡Tu proyecto se publicó correctamente!'
+                : 'Tu proyecto se guardó como borrador.';
+
+        } else {
+
+            $message = $project->status === 'published'
+                ? '¡Tu proyecto se actualizó y publicó correctamente!'
+                : 'Tu proyecto se actualizó y guardó como borrador.';
+
+        }
 
         return redirect()
             ->route('projects.show', $project)
             ->with('success', $message);
+    }
+
+    public function delete(Project $project, MediaService $mediaService)
+    {
+        // Verificar que el usuario sea el propietario del proyecto.
+        if (auth()->id() !== $project->user_id) {
+            abort(403, 'No tienes permiso para eliminar este proyecto.');
+        }
+
+        // Obtener la portada de MongoDB antes de eliminar el proyecto.
+        $media = null;
+
+        if ($project->cover_media_id) {
+            $media = \App\Models\Media::find($project->cover_media_id);
+        }
+
+        // Guardar información de la portada antigua de SQL, si existiera.
+        $oldCoverPath = $project->cover_image_path;
+
+        // Eliminar el proyecto de SQL.
+        $project->delete();
+
+        // Eliminar la portada de MongoDB y el archivo físico.
+        if ($media) {
+            try {
+                $mediaService->delete($media);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
+
+        // Compatibilidad con proyectos que usaban la portada antigua.
+        if ($oldCoverPath) {
+            try {
+                \Illuminate\Support\Facades\Storage::disk('public')
+                    ->delete($oldCoverPath);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
+
+        return redirect()
+            ->route('home')
+            ->with('success', 'Tu proyecto se eliminó correctamente.');
+    }
+
+    public function myProjects(Request $request)
+    {
+        $user = $request->user();
+        $projects = Project::where('user_id', $user->id)
+            ->with('category')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('projects.myProjects', compact('projects'));
     }
 
 }
